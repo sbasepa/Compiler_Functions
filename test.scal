@@ -1,0 +1,17 @@
+int main(void) {
+    int a = 10;
+    for (;;) {
+        if (a ==11) {
+            continue;
+        }
+        a--;
+    }
+    while (1) {
+        if (a = 4) {
+            break;
+        }
+    }
+    do {
+        a = 2;
+    } while (a ==2);
+}
