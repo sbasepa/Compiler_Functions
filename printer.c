@@ -409,9 +409,6 @@ int printBlock(AST_block *block) {
 }
 
 void astPrinter(AST *ast) {
-    for (;;) {
-
-    }
     char *filename = "COMPILERTEMP18h8hw8h2828h28h28h2h8wbsd892j";
     // Open file for writing
     outputFile = fopen(filename, "w");

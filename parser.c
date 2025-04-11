@@ -350,10 +350,10 @@ AST_statement makeStatement(int *i, Tokens *tokens) {
             if (curToken.type != TOKEN_PUNCTUATOR || curToken.punctuator != TOKEN_SEMICOLON) {
                 error("Exprected Semicolon After Expression In For Loop Condition");
             }
-            increaseIndex(i);
-            curToken = tokens->tokens[*i];
         }
-        if (curToken.type != TOKEN_PUNCTUATOR || curToken.punctuator != TOKEN_LEFT_PAREN) {
+        increaseIndex(i);
+        curToken = tokens->tokens[*i];
+        if (curToken.type != TOKEN_PUNCTUATOR || curToken.punctuator != TOKEN_RIGHT_PAREN) {
             if (output.for_statement->type == AST_FOR_CONDITION) {
                 output.for_statement->type = AST_FOR_BOTH;
             } else {
