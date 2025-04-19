@@ -30,6 +30,7 @@ typedef enum {
     TOKEN_LEFT_CURLY,
     TOKEN_RIGHT_CURLY,
     TOKEN_SEMICOLON,
+    TOKEN_COMMA,
     //Unary Operators
     TOKEN_EXCLAMATION,
     TOKEN_TILDE,
@@ -79,14 +80,14 @@ typedef struct AST_statement AST_statement;
 typedef struct AST_block AST_block;
 typedef struct AST_declaration AST_declaration;
 typedef enum {
-    AST_NEGATE=11,
-    AST_NOT = 5,
+    AST_NEGATE=14,
+    AST_NOT = 6,
     AST_TILDE,
     AST_PLUS_PLUS,
     AST_MINUS_MINUS,
 } AST_unary_operator;
 typedef enum {
-    AST_PLUS = 9,
+    AST_PLUS = 10,
     AST_STAR,
     AST_FOWARD_SLASH,
     AST_PERCENT,
@@ -155,7 +156,8 @@ typedef enum {
     AST_STATEMENT_CONTINUE, //No real Value
     AST_STATEMENT_WHILE,
     AST_STATEMENT_DO,
-    AST_STATEMENT_FOR
+    AST_STATEMENT_FOR,
+    AST_STATEMENT_FUNCTION_CALL
 } AST_statement_type;
 typedef struct {
     AST_expression *condition;
@@ -177,7 +179,7 @@ typedef struct {
     AST_for_init_type type;
     union {
         AST_expression *expr;
-        AST_declaration *declaration;
+        AST_variable_declaration *declaration;
     };
 } AST_for_init;
 typedef struct {
@@ -188,6 +190,9 @@ typedef struct {
     AST_expression *updater;
 } AST_for_statement;
 typedef struct AST_if_statement AST_if_statement;
+typedef struct {
+    AST_expression *expressions;
+} AST_argument_list;
 typedef struct AST_statement {
     AST_statement_type type;
     union {
@@ -198,6 +203,8 @@ typedef struct AST_statement {
         AST_do_statement *do_statement;
         AST_for_statement *for_statement;
         AST_block *block;
+        AST_argument_list *args;
+        char *function_id;
     };
 } AST_statement;
 
@@ -207,9 +214,20 @@ typedef struct AST_if_statement{
     AST_statement if_statement; // Now AST_statement is fully defined
     AST_statement else_statement;
 } AST_if_statement;
-typedef struct AST_declaration{
+typedef struct AST_variable_declaration{
     char *id;
     AST_expression *expression;
+} AST_variable_declaration;
+typedef enum {
+    AST_DECLARATION_VARIABLE,
+    AST_DECLARATION_FUNCTION
+} AST_declaration_type;
+typedef struct AST_declaration {
+    AST_declaration_type type;
+    union {
+        AST_variable_declaration varDeclaration;
+        AST_function functionDeclaration;
+    };
 } AST_declaration;
 typedef enum {
     AST_BLOCK_DECLARATION,
@@ -226,8 +244,25 @@ typedef struct AST_block {
     AST_block_item *block_item;
     int num_items;
 } AST_block;
+typedef enum {
+    AST_PARAMETER_NULL,
+    AST_PARAMETER_INTEGER,
+    AST_PARAMETER_VOID
+} AST_parameter_type;
 typedef struct {
+    AST_parameter_type type;
+    char **vars;
+    int num_parameters;
+} AST_parameters;
+typedef enum {
+    AST_FUNCTION_DEFINITION_BLOCKS,
+    AST_FUNCTION_DECLARATION,
+    AST_FUNCTION_DEFINITION_NULL
+} AST_function_type;
+typedef struct {
+    AST_function_type type;
     char *id;
+    AST_parameters params;
     AST_block *block;
 } AST_function;
 typedef struct {

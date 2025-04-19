@@ -1,6 +1,7 @@
 #include "compiler.h"
 #define BLOCK_STEP_SIZE 50
 #define VAR_STEP_SIZE 10
+#define PARAM_STEP_SIZE 3
 AST_expression *makeExpression(int *i, Tokens *tokens, int minPrecedence);
 int maxTokens;
 void increaseIndex(int *i) {
@@ -395,7 +396,42 @@ AST_block_item makeBlockItem(int *i, Tokens *tokens) {
     output.statement = makeStatement(i, tokens);
     return output;
 }
-
+AST_parameters makeParams(int *i, Tokens *tokens) {
+    Token curToken = tokens->tokens[*i];
+    AST_parameters output;
+    if (curToken.type == TOKEN_KEYWORD && curToken.keyword == TOKEN_VOID) {
+        output.type = AST_PARAMETER_VOID;
+        increaseIndex(i);
+        curToken = tokens->tokens[*i];
+        if (curToken.type != TOKEN_PUNCTUATOR || curToken.punctuator != TOKEN_RIGHT_PAREN) {
+            error("Expected Left Parenthesis In Function Definition/Declaration");
+        }
+        return output;
+    }
+    if (curToken.type == TOKEN_PUNCTUATOR || curToken.punctuator == TOKEN_RIGHT_PAREN) {
+        output.type = AST_PARAMETER_NULL;
+        return output;
+    }
+    output.type = AST_PARAMETER_INTEGER;
+    output.num_parameters = 0;
+    int estimatedParams = PARAM_STEP_SIZE;
+    output.vars = malloc(sizeof(char *) * estimatedParams);
+    while (curToken.type != TOKEN_PUNCTUATOR || curToken.punctuator != TOKEN_RIGHT_PAREN) {
+        if (output.num_parameters > 0 && curToken.type != TOKEN_PUNCTUATOR && curToken.punctuator != TOKEN_COMMA) {
+            error("Expected Comma To Seperate Parameters In Function Definition/Declaration");
+        }
+        if (output.num_parameters > 0) {
+            increaseIndex(*i);
+            curToken = tokens->tokens[*i];
+        }
+        if (curToken.type != TOKEN_KEYWORD || curToken.keyword != TOKEN_INT) {
+            error("Need Type Int In Parameter Definition");
+        }
+        increaseIndex(*i);
+        curToken = tokens->tokens[*i];
+        
+    }
+} 
 AST_function *makeFunction(Tokens *tokens) {
     int i = 0;
     Token curToken = tokens->tokens[i];
@@ -409,7 +445,7 @@ AST_function *makeFunction(Tokens *tokens) {
         error("Expected Function Name");
     }
     output->id = malloc(strlen(curToken.id) + 1); 
-    strcpy(output->id, curToken.id);                          // Correct string copy              // Correct string copy              // Correct string copy              // Correct string copy
+    strcpy(output->id, curToken.id);
     increaseIndex(&i);
     curToken = tokens->tokens[i];
     if (curToken.type != TOKEN_PUNCTUATOR || curToken.punctuator != TOKEN_LEFT_PAREN) {
@@ -417,9 +453,7 @@ AST_function *makeFunction(Tokens *tokens) {
     }
     increaseIndex(&i);
     curToken = tokens->tokens[i];
-    if (curToken.type != TOKEN_KEYWORD || curToken.keyword != TOKEN_VOID) {
-        error("Expected Keyword Void");
-    }
+    output->params = makeParams(&i, tokens);
     increaseIndex(&i);
     curToken = tokens->tokens[i];
     if (curToken.type != TOKEN_PUNCTUATOR || curToken.punctuator != TOKEN_RIGHT_PAREN) {
